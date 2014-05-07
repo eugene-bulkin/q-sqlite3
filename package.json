@@ -1,0 +1,38 @@
+{
+  "name": "q-sqlite3",
+  "version": "0.0.1",
+  "main": "lib/q-sqlite3.js",
+  "description": "The node-sqlite3 module wrapped with Q promises.",
+  "homepage": "https://github.com/eugene-bulkin/q-sqlite3",
+  "bugs": "https://github.com/eugene-bulkin/q-sqlite3/issues",
+  "author": {
+    "name": "Eugene Bulkin",
+    "email": "eugene@eugenebulkin.name",
+    "url": "http://eugenebulkin.name"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eugene-bulkin/q-sqlite3"
+  },
+  "license": "MIT",
+  "files": [
+    "lib"
+  ],
+  "keywords": [],
+  "dependencies": {
+    "q": "1.x.x",
+    "sqlite3": "2.x.x"
+  },
+  "devDependencies": {
+    "q-io": "1.x.x",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "load-grunt-tasks": "^0.4.0",
+    "time-grunt": "^0.3.1",
+    "jshint-stylish": "^0.2.0",
+    "grunt-mocha-test": "^0.10.2"
+  },
+  "scripts": {
+    "test": "grunt"
+  }
+}
