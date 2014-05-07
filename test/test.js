@@ -115,6 +115,27 @@ describe('Q-SQLite3', function() {
         });
       });
     });
+    describe('#all()', function() {
+      it('Should get all rows', function(done) {
+        QSQL.all(db, 'SELECT name, location FROM tbl WHERE id > 0 ORDER BY id ASC').then(function(rows) {
+          assert.equal(3, rows.length, 'Must return 3 rows');
+          assert.deepEqual([
+            { name: 'foo', location: 'bar' },
+            { name: 'foo2', location: 'bar2' },
+            { name: 'foo3', location: 'bar3' }
+          ], rows, 'Must have correct data');
+        }).done(function() {
+          done();
+        });
+      });
+      it('Should return undefined when there are no rows', function(done) {
+        QSQL.all(db, 'SELECT name, location FROM tbl WHERE id < 0').then(function(rows) {
+          assert.deepEqual([], rows, 'Must return empty array for no rows');
+        }).done(function() {
+          done();
+        });
+      });
+    });
   });
 
   after(function(done) {
