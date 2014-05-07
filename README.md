@@ -12,8 +12,10 @@ The API is functionally the same as [node-sqlite3's API](https://github.com/mapb
 * `get`
 * `run`
 * `all`
+* `exec`
 
-These all run as promises.
+These all run as promises. If the normal API would not call the callback with
+data, then the promise resolves to the database.
 
 The only new method is `createDatabase`, which serves as a promise-wrapped version of the `Database` constructor; if successful, the promise resolves to the database instance. Otherwise the promise is rejected with the error sent as in node-sqlite3.
 
@@ -37,6 +39,7 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 
 ## Release History
 * **v0.0.1** - Initial release, only supports 3 basic query functions.
+* **v0.0.2** - Second release, add exec function.
 
 ## License
 Copyright (c) 2014 Eugene Bulkin. Licensed under the MIT license.

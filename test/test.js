@@ -136,6 +136,15 @@ describe('Q-SQLite3', function() {
         });
       });
     });
+    describe('#exec()', function() {
+      it('Should run queries properly and resolve w/ database', function(done) {
+        QSQL.exec(db, 'SELECT name, location FROM tbl WHERE id > 0 ORDER BY id ASC').then(function(database) {
+          assert.equal(database, db, 'Must resolve w/ database');
+        }).done(function() {
+          done();
+        });
+      });
+    });
   });
 
   after(function(done) {
