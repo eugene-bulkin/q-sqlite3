@@ -18,7 +18,11 @@
   "files": [
     "lib"
   ],
-  "keywords": [],
+  "keywords": [
+    "Q",
+    "SQLite3",
+    "promises"
+  ],
   "dependencies": {
     "q": "1.x.x",
     "sqlite3": "2.x.x"
