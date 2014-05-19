@@ -29,7 +29,7 @@ QSQL.createDatabase(':memory:').done(function(db) {
   DB = db;
 });
 
-QSQL.run(DB, 'INSERT INTO tbl (name) VALUES (?)', "foo").then(function(statement) {
+DB.run('INSERT INTO tbl (name) VALUES (?)', "foo").then(function(statement) {
   // do stuff with statement here
 });
 ```
@@ -40,6 +40,7 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 ## Release History
 * **v0.0.1** - Initial release, only supports 3 basic query functions.
 * **v0.0.2** - Second release, add exec function.
+* **v0.1.0** - Restructuring release. Methods are now exposed as they were in sqlite3, as part of a `Database` or `Statement` object.
 
 ## License
 Copyright (c) 2014 Eugene Bulkin. Licensed under the MIT license.
