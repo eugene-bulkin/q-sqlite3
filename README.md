@@ -6,13 +6,7 @@ The node-sqlite3 module wrapped with Q promises.
 Install the module with: `npm install q-sqlite3`
 
 ## Documentation
-The API is functionally the same as [node-sqlite3's API](https://github.com/mapbox/node-sqlite3/wiki/API), currently only supporting the following methods:
-
-* `close`
-* `get`
-* `run`
-* `all`
-* `exec`
+The API is functionally the same as [node-sqlite3's API](https://github.com/mapbox/node-sqlite3/wiki/API). The API methods supported can be found [on the wiki](https://github.com/eugene-bulkin/q-sqlite3/wiki).
 
 These all run as promises. If the normal API would not call the callback with
 data, then the promise resolves to the database.
@@ -41,6 +35,7 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 * **v0.0.1** - Initial release, only supports 3 basic query functions.
 * **v0.0.2** - Second release, add exec function.
 * **v0.1.0** - Restructuring release. Methods are now exposed as they were in sqlite3, as part of a `Database` or `Statement` object.
+* **v0.1.1** - Implement the basics of `Statement`s.
 
 ## License
 Copyright (c) 2014 Eugene Bulkin. Licensed under the MIT license.
