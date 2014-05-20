@@ -65,23 +65,26 @@ describe('Statements', function() {
       db.close().done(done);
     });
   });
+  before(helper.removeIfExists("test/test2.db"));
   describe('Inserting and retrieving rows', function() {
     var db;
     before(function(done) {
-      QSQL.createDatabase(':memory:').done(function(database) {
+      QSQL.createDatabase('test/test2.db').done(function(database) {
         db = database;
         done();
       });
     });
-    var inserted = 0, count = 100;
+    var inserted = 0, retrieved = 0, count = 10;
+    // inserting a whole bunch of things into an sqlite flat-file table is
+    // pretty slow...
+    this.timeout(2000 + 100 * count);
     it('Should create the table', function(done) {
       var stmt;
       db.prepare('CREATE TABLE foo (txt TEXT, num INTEGER, flt FLOAT, blb BLOB)').then(function(statement) {
         stmt = statement;
+        return stmt.run();
       }).then(function() {
-        return stmt.run().then(function() {
-          return stmt.finalize();
-        });
+        return stmt.finalize();
       }).fail(function(e) {
         assert(false, 'Unexpected error: ' + e);
       }).done(function() {
@@ -98,9 +101,8 @@ describe('Statements', function() {
             inserted++;
           }).done(function() {
             if(inserted === count) {
-              stmt.finalize().done(function() {
-                done();
-              });
+              stmt.finalize();
+              done();
             }
           });
         }
@@ -108,7 +110,6 @@ describe('Statements', function() {
     });
     it('Should prepare a statement and run it ' + (count + 5) + ' times', function(done) {
       var stmt;
-        var retrieved = 0;
       db.prepare("SELECT txt, num, flt, blb FROM foo ORDER BY num").then(function(statement) {
         assert.equal(statement.sql, 'SELECT txt, num, flt, blb FROM foo ORDER BY num', 'Incorrect query');
         stmt = statement;
@@ -134,80 +135,59 @@ describe('Statements', function() {
       }).fail(function(e) {
         assert(false, 'Unexpected error: ' + e);
       }).done(function() {
-        stmt.finalize().done(function() {
-          done();
-        });
+        stmt.finalize();
+        done();
       });
+    });
+    it('Should have retrieved ' + (count + 5) + ' rows', function() {
+      assert.equal(count + 5, retrieved, "Didn't retrieve all rows");
+    });
+    after(function(done) {
+      db.close().done(done);
+    });
+  });
+  describe('Retrieving reset() function', function() {
+    var db;
+    before(function(done) {
+      QSQL.createDatabase('test/test2.db').done(function(database) {
+        db = database;
+        done();
+      });
+    });
+    var retrieved = 0, count = 10;
+    it('Should retrieve the same row over and over again', function(done) {
+      var stmt;
+      db.prepare("SELECT txt, num, flt, blb FROM foo ORDER BY num").then(function(statement) {
+        stmt = statement;
+      }).then(function() {
+        var promises = [];
+        for(var i = 0; i < count; i++) {
+          stmt.reset();
+          promises.push(stmt.get().then(function(row) {
+            assert.equal(row.txt, 'String 0');
+            assert.equal(row.num, 0);
+            assert.equal(row.flt, 0.0);
+            assert.equal(row.blb, null);
+
+            retrieved++;
+
+            return row;
+          }));
+        }
+        return Q.all(promises);
+      }).fail(function(e) {
+        assert(false, 'Unexpected error: ' + e);
+      }).done(function() {
+        stmt.finalize();
+        done();
+      });
+    });
+    it('Should have retrieved ' + (count) + ' rows', function() {
+      assert.equal(count, retrieved, "Didn't retrieve all rows");
     });
     after(function(done) {
       db.close().done(done);
     });
   });
 });
-/*
-describe('inserting and retrieving rows', function() {
-        var db;
-        before(function(done) { db = new sqlite3.Database(':memory:', done); });
-
-        var inserted = 0;
-        var retrieved = 0;
-
-        // We insert and retrieve that many rows.
-        var count = 1000;
-
-        it('should create the table', function(done) {
-            db.prepare("CREATE TABLE foo (txt text, num int, flt float, blb blob)").run().finalize(done);
-        });
-
-        it('should insert ' + count + ' rows', function(done) {
-            for (var i = 0; i < count; i++) {
-                db.prepare("INSERT INTO foo VALUES(?, ?, ?, ?)").run(
-                    'String ' + i,
-                    i,
-                    i * Math.PI,
-                    // null (SQLite sets this implicitly)
-                    function(err) {
-                        if (err) throw err;
-                        inserted++;
-                    }
-                ).finalize(function(err) {
-                    if (err) throw err;
-                    if (inserted == count) done();
-                });
-            }
-        });
-
-        it('should prepare a statement and run it ' + (count + 5) + ' times', function(done) {
-            var stmt = db.prepare("SELECT txt, num, flt, blb FROM foo ORDER BY num", function(err) {
-                if (err) throw err;
-                assert.equal(stmt.sql, 'SELECT txt, num, flt, blb FROM foo ORDER BY num');
-            });
-
-            for (var i = 0; i < count + 5; i++) (function(i) {
-                stmt.get(function(err, row) {
-                    if (err) throw err;
-
-                    if (retrieved >= 1000) {
-                        assert.equal(row, undefined);
-                    } else {
-                        assert.equal(row.txt, 'String ' + i);
-                        assert.equal(row.num, i);
-                        assert.equal(row.flt, i * Math.PI);
-                        assert.equal(row.blb, null);
-                    }
-
-                    retrieved++;
-                });
-            })(i);
-
-            stmt.finalize(done);
-        });
-
-        it('should have retrieved ' + (count + 5) + ' rows', function() {
-            assert.equal(count + 5, retrieved, "Didn't retrieve all rows");
-        });
-
-
-        after(function(done) { db.close(done); });
-    });
-*/
+after(helper.removeIfExists("test/test2.db"));
