@@ -89,26 +89,46 @@ describe('Open/Close', function(done) {
   });
   describe('Memory databases', function(done) {
     describe('Open and close memory database', function(done) {
-      var db;
-      it('Should open the database', function() {
+      var db, open = false, closed = false;
+      // We use this event emitter because there's no other way to guarantee
+      // that the close method happens AFTER we open the database.
+      handler.on('opened', function() {
+        open = true;
+      });
+      it('Should open the database', function(done) {
         QSQL.createDatabase(":memory:").then(function(database) {
           db = database;
         }, function(e) {
           assert(false, 'Unexpected error: ' + e);
-        }).done(done);
+        }).done(function() {
+          handler.emit('opened');
+          done();
+        });
       });
-      it('Should close the database', function() {
-        db.close().fail(function(e) {
-          assert(false, 'Unexpected error: ' + e);
-        }).done(done);
+      it('Should close the database', function closeDB(done) {
+        // if the database isn't open yet, wait until it is
+        if(open) {
+          db.close().fail(function(e) {
+            assert(false, 'Unexpected error: ' + e);
+          }).done(function() {
+            closed = true;
+            done();
+          });
+        } else {
+          setTimeout(closeDB, 100);
+        }
       });
-      it('Should not close the database twice', function() {
-        db.close().then(function() {
-          assert(false, 'No error occurred on second close');
-        }, function(e) {
-          assert(e, 'No error occurred on second close');
-          assert(e.errno === QSQL.MISUSE);
-        }).done(done);
+      it('Should not close the database twice', function closeTwice() {
+        if(open && closed) {
+          db.close().then(function() {
+            assert(false, 'No error occurred on second close');
+          }, function(e) {
+            assert(e, 'No error occurred on second close');
+            assert(e.errno === QSQL.MISUSE);
+          }).done(done);
+        } else {
+          setTimeout(closeTwice, 100);
+        }
       });
     });
   });
