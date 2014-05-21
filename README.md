@@ -36,6 +36,7 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 * **v0.0.2** - Second release, add exec function.
 * **v0.1.0** - Restructuring release. Methods are now exposed as they were in sqlite3, as part of a `Database` or `Statement` object.
 * **v0.1.1** - Implement the basics of `Statement`s.
+* **v0.1.2** - Extend `Statement` methods.
 
 ## License
 Copyright (c) 2014 Eugene Bulkin. Licensed under the MIT license.
