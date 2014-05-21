@@ -6,6 +6,9 @@ var Q = require('q');
 var assert = require('assert');
 var helper = require('./helper');
 
+var totalCount = 30;
+var miniCount = totalCount / 10;
+
 describe('Statements', function() {
   describe('Invalid SQL', function() {
     var db;
@@ -74,10 +77,10 @@ describe('Statements', function() {
         done();
       });
     });
-    var inserted = 0, retrieved = 0, count = 10;
+    var inserted = 0, retrieved = 0;
     // inserting a whole bunch of things into an sqlite flat-file table is
     // pretty slow...
-    this.timeout(2000 + 100 * count);
+    this.timeout(2000 + 200 * totalCount);
     it('Should create the table', function(done) {
       var stmt;
       db.prepare('CREATE TABLE foo (txt TEXT, num INTEGER, flt FLOAT, blb BLOB)').then(function(statement) {
@@ -91,16 +94,16 @@ describe('Statements', function() {
         done();
       });
     });
-    it('Should insert ' + count + ' rows', function(done) {
+    it('Should insert ' + totalCount + ' rows', function(done) {
       var stmt;
       db.prepare('INSERT INTO foo VALUES(?, ?, ?, ?)').then(function(statement) {
         stmt = statement;
       }).then(function() {
-        for(var i = 0; i < count; i++) {
+        for(var i = 0; i < totalCount; i++) {
           stmt.run('String ' + i, i, i * Math.PI).then(function(statement) {
             inserted++;
           }).done(function() {
-            if(inserted === count) {
+            if(inserted === totalCount) {
               stmt.finalize();
               done();
             }
@@ -108,17 +111,17 @@ describe('Statements', function() {
         }
       });
     });
-    it('Should prepare a statement and run it ' + (count + 5) + ' times', function(done) {
+    it('Should prepare a statement and run it ' + (totalCount + 5) + ' times', function(done) {
       var stmt;
       db.prepare("SELECT txt, num, flt, blb FROM foo ORDER BY num").then(function(statement) {
         assert.equal(statement.sql, 'SELECT txt, num, flt, blb FROM foo ORDER BY num', 'Incorrect query');
         stmt = statement;
       }).then(function() {
         var promises = [];
-        for(var i = 0; i < count + 5; i++) {
+        for(var i = 0; i < totalCount + 5; i++) {
           promises.push(stmt.get().then((function(i) {
             return function(row) {
-              if(retrieved >= count) {
+              if(retrieved >= totalCount) {
                 assert.equal(row, undefined);
               } else {
                 assert.equal(row.txt, 'String ' + i);
@@ -139,8 +142,8 @@ describe('Statements', function() {
         done();
       });
     });
-    it('Should have retrieved ' + (count + 5) + ' rows', function() {
-      assert.equal(count + 5, retrieved, "Didn't retrieve all rows");
+    it('Should have retrieved ' + (totalCount + 5) + ' rows', function() {
+      assert.equal(totalCount + 5, retrieved, "Didn't retrieve all rows");
     });
     after(function(done) {
       db.close().done(done);
@@ -154,14 +157,14 @@ describe('Statements', function() {
         done();
       });
     });
-    var retrieved = 0, count = 10;
+    var retrieved = 0;
     it('Should retrieve the same row over and over again', function(done) {
       var stmt;
       db.prepare("SELECT txt, num, flt, blb FROM foo ORDER BY num").then(function(statement) {
         stmt = statement;
       }).then(function() {
         var promises = [];
-        for(var i = 0; i < count; i++) {
+        for(var i = 0; i < miniCount; i++) {
           stmt.reset();
           promises.push(stmt.get().then(function(row) {
             assert.equal(row.txt, 'String 0');
@@ -182,8 +185,98 @@ describe('Statements', function() {
         done();
       });
     });
-    it('Should have retrieved ' + (count) + ' rows', function() {
-      assert.equal(count, retrieved, "Didn't retrieve all rows");
+    it('Should have retrieved ' + (miniCount) + ' rows', function() {
+      assert.equal(miniCount, retrieved, "Didn't retrieve all rows");
+    });
+    after(function(done) {
+      db.close().done(done);
+    });
+  });
+  describe('Multiple parameter binding with get()', function() {
+    var db;
+    before(function(done) {
+      QSQL.createDatabase('test/test2.db').done(function(database) {
+        db = database;
+        done();
+      });
+    });
+    var retrieved = 0;
+    it('Should retrieve particular rows', function(done) {
+      var stmt;
+      db.prepare("SELECT txt, num, flt, blb FROM foo WHERE num = ?").then(function(statement) {
+        stmt = statement;
+      }).then(function() {
+        var promises = [];
+        for(var i = 0; i < miniCount; i++) {
+          promises.push(stmt.get(i * miniCount + 1).then((function(i) {
+            return function(row) {
+              var val = i * miniCount + 1;
+              assert.equal(row.txt, 'String ' + val);
+              assert.equal(row.num, val);
+              assert.equal(row.flt, val * Math.PI);
+              assert.equal(row.blb, null);
+
+              retrieved++;
+
+              return row;
+            };
+          })(i)));
+        }
+        return Q.all(promises);
+      }).fail(function(e) {
+        assert(false, 'Unexpected error: ' + e);
+      }).done(function() {
+        stmt.finalize();
+        done();
+      });
+    });
+    it('Should have retrieved ' + (miniCount) + ' rows', function() {
+      assert.equal(miniCount, retrieved, "Didn't retrieve all rows");
+    });
+    after(function(done) {
+      db.close().done(done);
+    });
+  });
+  describe('Multiple parameter binding with bind()', function() {
+    var db;
+    before(function(done) {
+      QSQL.createDatabase('test/test2.db').done(function(database) {
+        db = database;
+        done();
+      });
+    });
+    var retrieved = 0;
+    it('Should retrieve particular rows', function(done) {
+      var stmt;
+      db.prepare("SELECT txt, num, flt, blb FROM foo WHERE num = ?").then(function(statement) {
+        stmt = statement;
+      }).then(function() {
+        var promises = [];
+        for(var i = 0; i < miniCount; i++) {
+          stmt.bind(i * miniCount + 1);
+          promises.push(stmt.get().then((function(val) {
+            return function(row) {
+              assert.equal(row.txt, 'String ' + val);
+              assert.equal(row.num, val);
+              assert.equal(row.flt, val * Math.PI);
+              assert.equal(row.blb, null);
+
+              retrieved++;
+
+              return row;
+            };
+          })(i * miniCount + 1)));
+        }
+        return Q.all(promises);
+      }).fail(function(e) {
+        assert(false, 'Unexpected error: ' + e);
+      }).done(function() {
+        stmt.finalize();
+        done();
+      });
+    });
+    it('Should have retrieved ' + (miniCount) + ' rows', function() {
+      assert.equal(miniCount, retrieved, "Didn't retrieve all rows");
     });
     after(function(done) {
       db.close().done(done);
