@@ -1,4 +1,6 @@
-# q-sqlite3 [![Build Status](https://secure.travis-ci.org/eugene-bulkin/q-sqlite3.png?branch=master)](http://travis-ci.org/eugene-bulkin/q-sqlite3)
+# q-sqlite3 [![Build Status](https://secure.travis-ci.org/eugene-bulkin/q-sqlite3.png?branch=master)](http://travis-ci.org/eugene-bulkin/q-sqlite3) ![npm module badge](https://badge.fury.io/js/q-sqlite3.png)
+
+![npm stats](https://nodei.co/npm/q-sqlite3.png?downloads=true)
 
 The node-sqlite3 module wrapped with Q promises.
 
