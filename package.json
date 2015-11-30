@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "q": "1.x.x",
-    "sqlite3": "2.x.x"
+    "sqlite3": "3.x.x"
   },
   "devDependencies": {
     "q-io": "1.x.x",
