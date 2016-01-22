@@ -1,6 +1,6 @@
 {
   "name": "q-sqlite3",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "lib/q-sqlite3.js",
   "description": "The node-sqlite3 module wrapped with Q promises.",
   "homepage": "https://github.com/eugene-bulkin/q-sqlite3",
